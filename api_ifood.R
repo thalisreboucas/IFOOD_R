@@ -57,3 +57,25 @@ clientId = "35e0b0f4-6f91-473d-acd1-98b7b310924e"
 clientSecret = "fx7vre8dxhpyztxdxmoyvwu5nv9zp9pi92eji4b72fmevu67npnvkura2xwh9lzlu2hast5e6m9vfnpkp12efmxsbha38n7y9c2"
 
 token(clientId,clientSecret)
+
+get_restaurants <- function(token) {
+  # Define the URL and headers
+  url <- "https://merchant-api.ifood.com.br/merchant/v1.0/merchants"
+  headers <- c(
+    "accept" = "application/json",
+    "Authorization" = paste0("Bearer"," ",token[1])
+  )
+  
+  # Make the GET request
+  response <- httr::GET(url, httr::add_headers(.headers = headers))
+  
+  # Check the status code of the response
+  status_code <- httr::status_code(response)
+  
+  # Check the content of the response
+  content <- httr::content(response)
+  return(content)
+}
+
+get_restaurants(a$accessToken[1])
+
