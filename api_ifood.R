@@ -1,4 +1,4 @@
-pacman::p_load(httr,curl,tidyverse)
+pacman::p_load(httr,tidyverse)
 
 clientId = "bc8d66a7-d279-49dd-8235-78dc57dd28b7"
 
@@ -58,6 +58,8 @@ clientSecret = "fx7vre8dxhpyztxdxmoyvwu5nv9zp9pi92eji4b72fmevu67npnvkura2xwh9lzl
 
 token(clientId,clientSecret)
 
+token <- token(clientId,clientSecret)$accessToken
+
 get_restaurants <- function(token) {
   # Define the URL and headers
   url <- "https://merchant-api.ifood.com.br/merchant/v1.0/merchants"
@@ -77,5 +79,51 @@ get_restaurants <- function(token) {
   return(content)
 }
 
-get_restaurants(a$accessToken[1])
+get_restaurants(token)
+
+id <- get_restaurants(token)[[1]]$id
+
+
+
+get_merchant <- function(id_restaurant){
+  # Define the URL and headers
+  url <- "https://merchant-api.ifood.com.br/merchant/v1.0/merchants/"
+  headers <- c(
+    "accept" = "application/json",
+    "Authorization" = paste0("Bearer"," ",token[1])
+  )
+  
+  # Make the GET request
+  response <- httr::GET(paste0(url,id_restaurant), httr::add_headers(.headers = headers))
+  
+  # Check the status code of the response
+  status_code <- httr::status_code(response)
+  
+  # Check the content of the response
+  content <- httr::content(response)
+  return(content)
+}
+get_merchant(id)
+
+get_merchant_status <- function(id_restaurant){
+  # Define the URL and headers
+  url <- "https://merchant-api.ifood.com.br/merchant/v1.0/merchants/"
+  url_I <- paste0(url,id_restaurant) 
+  url_final <- paste0(url_I,"/status")
+  headers <- c(
+    "accept" = "application/json",
+    "Authorization" = paste0("Bearer"," ",token[1])
+  )
+  
+  # Make the GET request
+  response <- httr::GET(url_final, httr::add_headers(.headers = headers))
+  
+  # Check the status code of the response
+  status_code <- httr::status_code(response)
+  
+  # Check the content of the response
+  content <- httr::content(response)
+  return(content)
+}
+get_merchant_status(id)
 
