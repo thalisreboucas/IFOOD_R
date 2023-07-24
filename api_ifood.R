@@ -127,3 +127,27 @@ get_merchant_status <- function(id_restaurant){
 }
 get_merchant_status(id)
 
+
+get_merchant_operation <- function(id_restaurant,operation){
+  # Define the URL and headers
+  url <- "https://merchant-api.ifood.com.br/merchant/v1.0/merchants/"
+  url_I <- paste0(url,id_restaurant) 
+  url_final <- paste0(url_I,"/status","/",operation)
+  headers <- c(
+    "accept" = "application/json",
+    "Authorization" = paste0("Bearer"," ",token[1])
+  )
+  
+  # Make the GET request
+  response <- httr::GET(url_final, httr::add_headers(.headers = headers))
+  
+  # Check the status code of the response
+  status_code <- httr::status_code(response)
+  
+  # Check the content of the response
+  content <- httr::content(response)
+  return(content)
+}
+
+get_merchant_operation(id,"string")
+
