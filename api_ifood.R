@@ -1,32 +1,29 @@
 pacman::p_load(httr,tidyverse)
 
-clientId = "bc8d66a7-d279-49dd-8235-78dc57dd28b7"
-
-UserCode <- function(clientId){
+#clientId = "bc8d66a7-d279-49dd-8235-78dc57dd28b7"
+#UserCode <- function(clientId){
 # Define the URL and parameters
-url <- "https://merchant-api.ifood.com.br/authentication/v1.0/oauth/userCode"
-headers <- c(
-  "accept" = "application/json",
-  "Content-Type" = "application/x-www-form-urlencoded"
-)
-data <- list(clientId = clientId[1])
+#url <- "https://merchant-api.ifood.com.br/authentication/v1.0/oauth#/userCode"
+#headers <- c(
+#  "accept" = "application/json",
+#  "Content-Type" = "application/x-www-form-urlencoded"
+#)
+#data <- list(clientId = clientId[1])
+#
+## Make the POST request
+#response <- httr::POST(url, httr::add_headers(.headers=headers), body = #data, encode = "form")
+#
+## Check the status code of the response
+#status_code <- httr::status_code(response)
+#
+## Check the content of the response
+#content <- httr::content(response)
+#
+#return(content)
+#}
+#UserCode(clientId)
 
-# Make the POST request
-response <- httr::POST(url, httr::add_headers(.headers=headers), body = data, encode = "form")
-
-# Check the status code of the response
-status_code <- httr::status_code(response)
-
-# Check the content of the response
-content <- httr::content(response)
-
-return(content)
-}
-
-UserCode(clientId)
-
-
-token <- function(clientId,clientSecret){
+get_acessToken <- function(clientId,clientSecret){
   # Define the URL and parameters
   url <- "https://merchant-api.ifood.com.br/authentication/v1.0/oauth/token"
   headers <- c(
@@ -42,55 +39,66 @@ token <- function(clientId,clientSecret){
                )
   
   # Make the POST request
-  response <- httr::POST(url, httr::add_headers(.headers=headers), body = data, encode = "form")
-  
-  # Check the status code of the response
-  status_code <- httr::status_code(response)
+  response <- httr::POST(url,
+                         httr::add_headers(.headers=headers),
+                         body = data, encode = "form")
   
   # Check the content of the response
-  content <- httr::content(response)
+  content <- httr::content(response) |> as.data.frame()
   
-  return(content)
+  # Check if the response is successful (status code 200)
+  if (httr::status_code(response) == 200) {
+    # Return the content of the response
+    return(content)
+  } else {
+    # Return an error message if the request was not successful
+    stop(content$message)
+ }
 }
-
+  
 clientId = "35e0b0f4-6f91-473d-acd1-98b7b310924e"
 clientSecret = "fx7vre8dxhpyztxdxmoyvwu5nv9zp9pi92eji4b72fmevu67npnvkura2xwh9lzlu2hast5e6m9vfnpkp12efmxsbha38n7y9c2"
 
-token(clientId,clientSecret)
+acessToken <- get_acessToken(clientId,clientSecret)
 
-token <- token(clientId,clientSecret)$accessToken
-
-get_restaurants <- function(token) {
+get_restaurants <- function(acessToken) {
   # Define the URL and headers
   url <- "https://merchant-api.ifood.com.br/merchant/v1.0/merchants"
   headers <- c(
     "accept" = "application/json",
-    "Authorization" = paste0("Bearer"," ",token[1])
+    "Authorization" = paste0("Bearer"," ",acessToken[1])
   )
   
   # Make the GET request
   response <- httr::GET(url, httr::add_headers(.headers = headers))
   
-  # Check the status code of the response
-  status_code <- httr::status_code(response)
-  
   # Check the content of the response
-  content <- httr::content(response)
-  return(content)
+  content <- httr::content(response) |> as.data.frame()
+
+  # Check the content of the response
+  content <- httr::content(response)  |> 
+    purrr::pluck(1) |>
+    purrr::map_df(1) 
+  
+  # Check if the response is successful (status code 200)
+  if (httr::status_code(response) == 200) {
+    # Return the content of the response
+    return(content)
+  } else {
+    # Return an error message if the request was not successful
+    stop(content$message)
+  }
 }
 
-get_restaurants(token)
-
-id <- get_restaurants(token)[[1]]$id
-
-
+get_restaurants(acessToken) 
+id <- get_restaurants(acessToken)$id
 
 get_merchant <- function(id_restaurant){
   # Define the URL and headers
   url <- "https://merchant-api.ifood.com.br/merchant/v1.0/merchants/"
   headers <- c(
     "accept" = "application/json",
-    "Authorization" = paste0("Bearer"," ",token[1])
+    "Authorization" = paste0("Bearer"," ",acessToken[1])
   )
   
   # Make the GET request
@@ -100,10 +108,20 @@ get_merchant <- function(id_restaurant){
   status_code <- httr::status_code(response)
   
   # Check the content of the response
-  content <- httr::content(response)
-  return(content)
+  content <- httr::content(response) |>  as.data.frame()
+ 
+  # Check if the response is successful (status code 200)
+  if (httr::status_code(response) == 200) {
+    # Return the content of the response
+    return(content)
+  } else {
+    # Return an error message if the request was not successful
+    stop(content$message)
+  }
+  
+  
 }
-get_merchant(id)
+get_merchant(id) 
 
 get_merchant_status <- function(id_restaurant){
   # Define the URL and headers
@@ -112,7 +130,7 @@ get_merchant_status <- function(id_restaurant){
   url_final <- paste0(url_I,"/status")
   headers <- c(
     "accept" = "application/json",
-    "Authorization" = paste0("Bearer"," ",token[1])
+    "Authorization" = paste0("Bearer"," ",acessToken[1])
   )
   
   # Make the GET request
@@ -122,10 +140,20 @@ get_merchant_status <- function(id_restaurant){
   status_code <- httr::status_code(response)
   
   # Check the content of the response
-  content <- httr::content(response)
-  return(content)
+  content <- httr::content(response) |> 
+             purrr::pluck(1) |> 
+             purrr::map_df(1)
+  # Check if the response is successful (status code 200)
+  if (httr::status_code(response) == 200) {
+    # Return the content of the response
+    return(content)
+  } else {
+    # Return an error message if the request was not successful
+    stop(content$message)
+  }
 }
 get_merchant_status(id)
+
 
 
 get_merchant_operation <- function(id_restaurant,operation){
@@ -138,16 +166,131 @@ get_merchant_operation <- function(id_restaurant,operation){
     "Authorization" = paste0("Bearer"," ",token[1])
   )
   
-  # Make the GET request
-  response <- httr::GET(url_final, httr::add_headers(.headers = headers))
+  # Define the query parameters
+  query_parameters <- list(
+    types = "PLC,REC,CFM",
+    groups = "ORDER_STATUS,DELIVERY"
+  )
   
-  # Check the status code of the response
-  status_code <- httr::status_code(response)
+  # Make the GET request
+  response <- httr::GET(url_final, 
+                        httr::add_headers(.headers = headers),
+                        query = query_parameters)
+  
   
   # Check the content of the response
-  content <- httr::content(response)
-  return(content)
-}
+  content <- httr::content(response)  |> 
+    purrr::pluck(1) |>
+    purrr::map_df(1) 
 
+  # Check if the response is successful (status code 200)
+  if (httr::status_code(response) == 200) {
+    # Return the content of the response
+    return(content)
+  } else {
+    # Return an error message if the request was not successful
+    stop(content$message)
+  
+  } 
+}
 get_merchant_operation(id,"string")
+
+
+# Call the function to orders
+get_order <- function(){
+  # Define the URL and headers
+  url <- "https://merchant-api.ifood.com.br/order/v1.0"
+  url_final <- paste0(url,"/events:polling")
+  headers <- c(
+    "accept" = "application/json",
+    "Authorization" = paste0("Bearer"," ",token[1])
+  )
+  
+  # Define the query parameters
+  types <- list(
+    types = "PLC,REC,CFM",
+    groups = "ORDER_STATUS,DELIVERY"
+  )
+  
+  # Make the GET request
+  response <- httr::GET(url_final, 
+                        httr::add_headers(.headers = headers))
+  
+  # Check if the response is successful (status code 200)
+  if (httr::status_code(response) != 200) {
+    # Return the content of the response
+    return(httr::content(response))
+  } else {
+    # Return an error message if the request was not successful
+    stop(content$message)
+  }
+}
+get_order()
+
+# Function to make the API call and return the response content
+post_ifood_acknowledgment <- function(id_restaurant,id_order) {
+  # Define the URL and headers
+  url <- "https://merchant-api.ifood.com.br/order/v1.0/events/acknowledgment"
+  headers <- c(
+    "accept" = "*/*",
+    "Authorization" = paste0("Bearer"," ",token[1]),
+    "Content-Type" = "application/json"
+  )
+  
+  # Define the JSON data
+  json_data <-  paste0('[{"id":' ,
+                id_restaurant,
+                 '}','{"id":',
+                id_order,
+                '"}]')
+  
+  # Make the POST request
+  response <- httr::POST(url, httr::add_headers(.headers = headers), body = json_data)
+  
+  # Check if the response is successful (status code 200)
+  if (httr::status_code(response) == 200) {
+    # Return the content of the response
+    return(httr::content(response))
+  } else {
+    # Return an error message if the request was not successful
+    stop(content$message)
+  }
+}
+post_ifood_acknowledgment()
+
+
+get_ifood_sales_processing <- function(merchant_id, begin_last_processing_date, end_last_processing_date){
+# putting date in function
+  # Define the URL and headers
+  url <-  paste0("https://merchant-api.ifood.com.br/financial/v2.0/merchants/", merchant_id, "/sales")
+  headers <- c(
+    "accept" = "application/json",
+    "Authorization" = paste0("Bearer"," ",token[1])
+  )
+  
+  query_parameters <- list(
+    beginLastProcessingDate = begin_last_processing_date,
+    endLastProcessingDate = end_last_processing_date)
+  
+  # Make the GET request
+  response <- httr::GET(url, 
+                        httr::add_headers(.headers = headers),
+                        query = query_parameters)
+  
+  # Check the content of the response
+  content <- httr::content(response)  |> 
+    purrr::pluck(1) |>
+    purrr::map_df(1) 
+  
+  # Check if the response is successful (status code 200)
+  if (httr::status_code(response) == 200) {
+    # Return the content of the response
+    return(content)
+  } else {
+    # Return an error message if the request was not successful
+    stop(content$message)
+ }
+} 
+get_ifood_sales_processing(id,"2023-07-28","2023-07-26")
+
 
