@@ -165,22 +165,22 @@ get_merchant_operation(id,"string")
 # Call the function to orders
 get_order <- function(){
   # Define the URL and headers
-  url <- "https://merchant-api.ifood.com.br/order/v1.0"
-  url_final <- paste0(url,"/events:polling")
+  url <- "https://merchant-api.ifood.com.br/order/v1.0/events:polling"
   headers <- c(
     "accept" = "application/json",
     "Authorization" = paste0("Bearer"," ",acessToken[1])
   )
   
   # Define the query parameters
-  types <- list(
+  query_parameters <- list(
     types = "PLC,REC,CFM",
     groups = "ORDER_STATUS,DELIVERY"
   )
   
   # Make the GET request
-  response <- httr::GET(url_final, 
-                        httr::add_headers(.headers = headers))
+  response <- httr::GET(url, 
+                        httr::add_headers(.headers = headers),
+                        query = query_parameters)
   
   # Check if the response is successful (status code 200)
   if (httr::status_code(response) != 200) {
