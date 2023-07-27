@@ -146,7 +146,7 @@ get_merchant_status <- function(id_restaurant){
   # Check if the response is successful (status code 200)
   if (httr::status_code(response) == 200) {
     # Return the content of the response
-    return(content)
+    return(content[4,])
   } else {
     # Return an error message if the request was not successful
     stop(content$message)
@@ -163,7 +163,7 @@ get_merchant_operation <- function(id_restaurant,operation){
   url_final <- paste0(url_I,"/status","/",operation)
   headers <- c(
     "accept" = "application/json",
-    "Authorization" = paste0("Bearer"," ",token[1])
+    "Authorization" = paste0("Bearer"," ",acessToken[1])
   )
   
   # Define the query parameters
@@ -203,7 +203,7 @@ get_order <- function(){
   url_final <- paste0(url,"/events:polling")
   headers <- c(
     "accept" = "application/json",
-    "Authorization" = paste0("Bearer"," ",token[1])
+    "Authorization" = paste0("Bearer"," ",acessToken[1])
   )
   
   # Define the query parameters
@@ -233,7 +233,7 @@ post_ifood_acknowledgment <- function(id_restaurant,id_order) {
   url <- "https://merchant-api.ifood.com.br/order/v1.0/events/acknowledgment"
   headers <- c(
     "accept" = "*/*",
-    "Authorization" = paste0("Bearer"," ",token[1]),
+    "Authorization" = paste0("Bearer"," ",acessToken[1]),
     "Content-Type" = "application/json"
   )
   
@@ -258,19 +258,24 @@ post_ifood_acknowledgment <- function(id_restaurant,id_order) {
 }
 post_ifood_acknowledgment()
 
-
+# sales for processing and order
 get_ifood_sales_processing <- function(merchant_id, begin_last_processing_date, end_last_processing_date){
 # putting date in function
   # Define the URL and headers
   url <-  paste0("https://merchant-api.ifood.com.br/financial/v2.0/merchants/", merchant_id, "/sales")
   headers <- c(
     "accept" = "application/json",
-    "Authorization" = paste0("Bearer"," ",token[1])
+    "Authorization" = paste0("Bearer"," ",acessToken[1])
   )
   
   query_parameters <- list(
     beginLastProcessingDate = begin_last_processing_date,
     endLastProcessingDate = end_last_processing_date)
+  
+  #query_parameters <- list(
+  #  beginOrderDate = begin_order_date,
+  #  endOrderDate = end_order_date)
+  
   
   # Make the GET request
   response <- httr::GET(url, 
@@ -285,12 +290,15 @@ get_ifood_sales_processing <- function(merchant_id, begin_last_processing_date, 
   # Check if the response is successful (status code 200)
   if (httr::status_code(response) == 200) {
     # Return the content of the response
-    return(content)
+    return(httr::content(response))
+    #return(content)
   } else {
     # Return an error message if the request was not successful
     stop(content$message)
  }
 } 
-get_ifood_sales_processing(id,"2023-07-28","2023-07-26")
+get_ifood_sales_processing(id,"2023-07-25","2023-07-26")
+
+
 
 
