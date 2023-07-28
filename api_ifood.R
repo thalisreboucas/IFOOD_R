@@ -133,16 +133,9 @@ get_merchant_operation <- function(id_restaurant,operation){
     "Authorization" = paste0("Bearer"," ",acessToken[1])
   )
   
-  # Define the query parameters
-  query_parameters <- list(
-    types = "PLC,REC,CFM",
-    groups = "ORDER_STATUS,DELIVERY"
-  )
-  
   # Make the GET request
   response <- httr::GET(url_final, 
-                        httr::add_headers(.headers = headers),
-                        query = query_parameters)
+                        httr::add_headers(.headers = headers))
   
   
   # Check the content of the response
@@ -202,7 +195,7 @@ get_order <- function(){
 get_order()
 
 # Function to make the API call and return the response content
-post_ifood_acknowledgment <- function(id_restaurant,id_order) {
+post_ifood_acknowledgment <- function(id_restaurant,order_id) {
   # Define the URL and headers
   url <- "https://merchant-api.ifood.com.br/order/v1.0/events/acknowledgment"
   headers <- c(
@@ -215,7 +208,7 @@ post_ifood_acknowledgment <- function(id_restaurant,id_order) {
   json_data <-  paste0('[{"id":' ,
                 id_restaurant,
                  '}','{"id":',
-                id_order,
+                order_id,
                 '"}]')
   
   # Make the POST request
@@ -231,6 +224,218 @@ post_ifood_acknowledgment <- function(id_restaurant,id_order) {
   }
 }
 post_ifood_acknowledgment()
+
+
+# Call the function to confirm an iFood order
+order_id <- "3fa85f64-5717-4562-b3fc-2c963f66afa6"  # Replace with the actual order ID
+
+get_order_details <- function(order_id){
+  # Define the URL and headers
+  url <- paste("https://merchant-api.ifood.com.br/order/v1.0/orders/",
+               order_id)
+  headers <- c(
+    "accept" = "application/json",
+    "Authorization" = paste0("Bearer"," ",acessToken[1])
+  )
+  
+  # Make the GET request
+  response <- httr::GET(url, 
+                        httr::add_headers(.headers = headers))
+  
+  content <- httr::status_code(response) 
+  
+  # Check if the response is successful (status code 200)
+  if (httr::status_code(response) == 200) {
+    # Return the content of the response
+    return(content)
+  } else {
+    # Return an error message if the request was not successful
+    stop(content)
+  }
+}
+get_order_details(order_id)
+
+# Function to make the API call and return the response content
+confirm_ifood_order <- function(order_id) {
+  # Define the URL and headers
+  url <- paste0("https://merchant-api.ifood.com.br/order/v1.0/orders/", order_id, "/confirm")
+  headers <- c(
+    "accept" = "*/*",
+    "Authorization" = paste0("Bearer"," ",acessToken[1])
+  )
+  
+  # Make the POST request
+  response <- httr::POST(url, httr::add_headers(.headers = headers))
+  
+  # Check if the response is successful (status code 200)
+  if (httr::status_code(response) == 200) {
+    # Return the content of the response
+    return(httr::content(response))
+  } else {
+    # Return an error message if the request was not successful
+    stop(httr::content(response))
+  }
+}
+confirmation_response(order_id)
+
+start_preparation <- function(order_id) {
+  # Define the URL and headers
+  url <- paste0("https://merchant-api.ifood.com.br/order/v1.0/orders/", order_id, "/startPreparation")
+  headers <- c(
+    "accept" = "*/*",
+    "Authorization" = paste0("Bearer"," ",acessToken[1])
+  )
+  
+  # Make the POST request
+  response <- httr::POST(url, httr::add_headers(.headers = headers))
+  
+  # Check if the response is successful (status code 200)
+  if (httr::status_code(response) == 200) {
+    # Return the content of the response
+    return(httr::content(response))
+  } else {
+    # Return an error message if the request was not successful
+    stop(httr::content(response))
+  }
+}
+start_preparation(order_id)
+
+ready_to_pickup <- function(order_id) {
+  # Define the URL and headers
+  url <- paste0("https://merchant-api.ifood.com.br/order/v1.0/orders/", order_id, "/readyToPickup")
+  headers <- c(
+    "accept" = "*/*",
+    "Authorization" = paste0("Bearer"," ",acessToken[1])
+  )
+  
+  # Make the POST request
+  response <- httr::POST(url, httr::add_headers(.headers = headers))
+  
+  # Check if the response is successful (status code 200)
+  if (httr::status_code(response) == 200) {
+    # Return the content of the response
+    return(httr::content(response))
+  } else {
+    # Return an error message if the request was not successful
+    stop(httr::content(response))
+  }
+}
+ready_to_pickup(order_id)
+
+dispatch_an_order <- function(order_id) {
+  # Define the URL and headers
+  url <- paste0("https://merchant-api.ifood.com.br/order/v1.0/orders/", order_id, "/dispatch")
+  headers <- c(
+    "accept" = "*/*",
+    "Authorization" = paste0("Bearer"," ",acessToken[1])
+  )
+  
+  # Make the POST request
+  response <- httr::POST(url, httr::add_headers(.headers = headers))
+  
+  # Check if the response is successful (status code 200)
+  if (httr::status_code(response) == 200) {
+    # Return the content of the response
+    return(httr::content(response))
+  } else {
+    # Return an error message if the request was not successful
+    stop(httr::content(response))
+  }
+}
+dispatch_an_order(order_id)
+
+
+get_avaible_cancellation <- function(order_id){
+  # Define the URL and headers
+  url <- paste0("https://merchant-api.ifood.com.br/order/v1.0/orders/",
+                order_id,"/cancellationReasons")
+  headers <- c(
+    "accept" = "application/json",
+    "Authorization" = paste0("Bearer"," ",acessToken[1])
+  )
+  
+  # Make the GET request
+  response <- httr::GET(url, 
+                        httr::add_headers(.headers = headers))
+  
+  content <- httr::status_code(response) 
+  
+  # Check if the response is successful (status code 200)
+  if (httr::status_code(response) == 200) {
+    # Return the content of the response
+    return(content)
+  } else {
+    # Return an error message if the request was not successful
+    stop(content)
+  }
+}
+get_order_details(order_id)
+
+request_to_cancel <- function(order_id) {
+  # Define the URL and headers
+  url <- paste0("https://merchant-api.ifood.com.br/order/v1.0/orders/", order_id, "/requestCancellation")
+  headers <- c(
+    "accept" = "*/*",
+    "Authorization" = paste0("Bearer"," ",acessToken[1])
+  )
+  
+  # Make the POST request
+  response <- httr::POST(url, httr::add_headers(.headers = headers))
+  
+  # Check if the response is successful (status code 200)
+  if (httr::status_code(response) == 200) {
+    # Return the content of the response
+    return(httr::content(response))
+  } else {
+    # Return an error message if the request was not successful
+    stop(httr::content(response))
+  }
+}
+request_to_cancel(order_id)
+
+accept_cancellation <- function(order_id) {
+  # Define the URL and headers
+  url <- paste0("https://merchant-api.ifood.com.br/order/v1.0/orders/", order_id, "/acceptCancellation")
+  headers <- c(
+    "accept" = "*/*",
+    "Authorization" = paste0("Bearer"," ",acessToken[1])
+  )
+  
+  # Make the POST request
+  response <- httr::POST(url, httr::add_headers(.headers = headers))
+  
+  # Check if the response is successful (status code 200)
+  if (httr::status_code(response) == 200) {
+    # Return the content of the response
+    return(httr::content(response))
+  } else {
+    # Return an error message if the request was not successful
+    stop(httr::content(response))
+  }
+}
+accept_cancellation(order_id)
+
+deny_cancellation <- function(order_id) {
+  # Define the URL and headers
+  url <- paste0("https://merchant-api.ifood.com.br/order/v1.0/orders/", order_id, "/denyCancellation")
+  headers <- c(
+    "accept" = "*/*",
+    "Authorization" = paste0("Bearer"," ",acessToken[1])
+  )
+  
+  # Make the POST request
+  response <- httr::POST(url, httr::add_headers(.headers = headers))
+  
+  # Check if the response is successful (status code 200)
+  if (httr::status_code(response) == 200) {
+    # Return the content of the response
+    return(httr::content(response))
+  } else {
+    # Return an error message if the request was not successful
+    stop(httr::content(response))
+  }
+}
+deny_cancellation(order_id)
 
 # sales for processing and order
 get_ifood_sales_processing <- function(merchant_id, begin_date, end_date){
@@ -270,5 +475,6 @@ get_ifood_sales_processing <- function(merchant_id, begin_date, end_date){
  }
 } 
 get_ifood_sales_processing(id,"2023-07-26","2023-07-30")
+
 
 
